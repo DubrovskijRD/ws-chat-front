@@ -13,6 +13,12 @@ class AuthError implements Exception {
   }
 }
 
+Future<void> logout(int id, String token) async {
+  const String path = '/logut';
+  // method for del api token, not working yet
+  
+}
+
 Future<SessionData> login(String email, String password) async {
   const String path = '/login';
   var url = Uri.http(config.host, path);

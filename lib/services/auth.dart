@@ -31,4 +31,8 @@ class AuthService {
   int? getId() {
     return prefs.getInt("id");
   }
+
+  void clear() {
+    prefs.clear();
+  }
 }

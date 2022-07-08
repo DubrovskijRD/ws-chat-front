@@ -3,6 +3,7 @@ import 'package:flutter_application_1/app.dart';
 import 'package:flutter_application_1/entity/chat.dart';
 import 'package:flutter_application_1/entity/users.dart';
 import 'package:flutter_application_1/pages/room_page.dart';
+import 'package:flutter_application_1/services/api.dart';
 import 'package:flutter_application_1/services/websocket.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +42,13 @@ class _RoomListPageWidgetState extends State<RoomListPageWidget> {
     ConnectState connectState = Provider.of<ConnectState>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Icon(connectState.conected ? Icons.check_circle : Icons.warning),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Icon(connectState.conected ? Icons.check_circle : Icons.warning),
+            IconButton(onPressed: (){logoutAction(context);}, icon: Icon(Icons.logout_rounded))
+          ],
+        ),
       ),
       key: scaffoldKey,
       backgroundColor: Colors.white,
@@ -122,7 +129,6 @@ class _RoomListPageWidgetState extends State<RoomListPageWidget> {
                                 ],
                               ),
                             ),
-                            
                             Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -200,20 +206,30 @@ class _RoomListPageWidgetState extends State<RoomListPageWidget> {
     );
   }
 
+  Future<void> logoutAction(BuildContext context) async {
+    AppState appState = Provider.of<AppState>(context, listen: false);
+    appState.disconnect();
+    await logout(appState.authService.getId()!, appState.authService.getToken()!);
+    appState.authService.clear();
+    Navigator.pushNamed(context, '/login');
+
+    // appState.authService.setAuth(session.email, session.token, session.id);
+  }
+
   Widget roomListElement(Room room, BuildContext context) {
     String label = "???";
     String? lastMessageDate = room.lastMessageDate?.toString();
     AppState appState = Provider.of<AppState>(context, listen: false);
     int myId = appState.authService.getId()!;
     User? member;
-  
+
     if (room.name != null) {
       label = room.name ?? label;
     } else {
       EntityStore<User> userStore =
           Provider.of<EntityStore<User>>(context, listen: false);
-      for (int memberId in room.members){
-        if (memberId != myId){
+      for (int memberId in room.members) {
+        if (memberId != myId) {
           member = userStore.getEntity(memberId)!;
         }
       }

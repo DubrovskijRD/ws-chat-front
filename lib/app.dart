@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/entity/base.dart';
 import 'package:flutter_application_1/entity/chat.dart';
 import 'package:flutter_application_1/entity/users.dart';
-import 'package:flutter_application_1/pages/home_page.dart';
 import 'package:flutter_application_1/pages/room_list_page.dart';
 import 'package:flutter_application_1/pages/register_confirm_page.dart';
-import 'package:flutter_application_1/pages/room_page.dart';
 import 'package:flutter_application_1/pages/search_user_page.dart';
 import 'package:flutter_application_1/services/auth.dart';
 import 'package:flutter_application_1/services/websocket.dart';
 import 'package:provider/provider.dart';
-import 'package:web_socket_channel/status.dart';
 import 'package:flutter_application_1/pages/login_page.dart' as lp;
 
 class EntityStore<E extends Entity> extends ChangeNotifier {
@@ -153,6 +150,11 @@ class AppState {
     if (token != null) {
       socket.connect(token, socketListner);
     }
+  }
+
+  disconnect() {
+    socket.close();
+    connectState.conected = false;
   }
 
   void setAuth(String email, String token, int id) {
