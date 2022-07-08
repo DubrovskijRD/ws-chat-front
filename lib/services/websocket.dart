@@ -4,7 +4,7 @@ import 'package:flutter_application_1/config.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
-String wsUrl = "ws://$host/connect";
+String wsUrl = "ws://$host/api/connect";
 
 class WsMessage {
   String resource;

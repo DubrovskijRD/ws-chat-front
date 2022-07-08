@@ -14,13 +14,13 @@ class AuthError implements Exception {
 }
 
 Future<void> logout(int id, String token) async {
-  const String path = '/logut';
+  const String path = '/api/logout';
   // method for del api token, not working yet
   
 }
 
 Future<SessionData> login(String email, String password) async {
-  const String path = '/login';
+  const String path = '/api/login';
   var url = Uri.http(config.host, path);
   // var url = Uri.https(host, path);
   DeviceData deviceData = DeviceData();
@@ -53,7 +53,7 @@ Future<SessionData> login(String email, String password) async {
 
 
 Future<bool> register(String email, String password) async {
-  const String path = '/register';
+  const String path = '/api/register';
   var url = Uri.http(config.host, path);
   // var url = Uri.https(host, path);
   var response = await http.post(
@@ -82,7 +82,7 @@ Future<bool> register(String email, String password) async {
 
 
 Future<bool> confirm(String confirmCode) async {
-  const String path = '/confirm';
+  const String path = '/api/confirm';
   var query = {
         "code": confirmCode,
       };
