@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/app.dart';
 import 'package:flutter_application_1/entity/auth.dart';
+import 'package:flutter_application_1/router.gr.dart';
 import 'package:flutter_application_1/services/api.dart';
 import 'package:flutter_application_1/widgets/errors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:auto_route/auto_route.dart';
 
 class ConfirmRegisterPageWidget extends StatefulWidget {
-  const ConfirmRegisterPageWidget({Key? key}) : super(key: key);
+  // const ConfirmRegisterPageWidget({Key? key, this.code}) : super(key: key);
+  const ConfirmRegisterPageWidget({Key? key, @PathParam('code') this.code}): super(key: key);
+
+  static const String baseRoute = '/register/confirm';
+  static String Function(String code) routeFromCode =
+      (String code) => baseRoute + '/$code';
+
+  final String? code;
 
   @override
   _ConfirmRegisterPagerWidgetState createState() =>
@@ -27,12 +36,15 @@ class _ConfirmRegisterPagerWidgetState
   void initState() {
     super.initState();
     confirmCodeController = TextEditingController();
+    if (widget.code != null){
+      confirmCodeController.text = widget.code!;
+    }
     AppState appState = Provider.of<AppState>(context, listen: false);
-    Future(() {
-      if (appState.authService.isLogin()) {
-        Navigator.pushNamed(context, '/');
-      }
-    });
+    // Future(() {
+    //   if (appState.authService.isLogin()) {
+    //     appState.router.replace(RoomListPageWidgetRoute());
+    //   }
+    // });
   }
 
   @override
@@ -227,7 +239,7 @@ class _ConfirmRegisterPagerWidgetState
                                             // FFButtonWidget(
                                             TextButton(
                                           onPressed: () {
-                                            Navigator.pop(context);
+                                            Provider.of<AppState>(context, listen: false).router.pop();
                                           },
                                           child: const Text("Назад"),
                                         ),
@@ -255,24 +267,25 @@ class _ConfirmRegisterPagerWidgetState
     try {
       await confirm(confirmCodeController.text);
       showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Успех! :)'),
-          content: Text("Теперь вы зарегистрированы и можете войти в систему."),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('На страницу входа.'),
-              onPressed: () {
-                Navigator.pushNamedAndRemoveUntil(
-                    context, '/login', (route) => false);
-              },
-            ),
-          ],
-        );
-      },
-    );
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Успех! :)'),
+            content:
+                Text("Теперь вы зарегистрированы и можете войти в систему."),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('На страницу входа.'),
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, '/login', (route) => false);
+                },
+              ),
+            ],
+          );
+        },
+      );
     } on AuthError catch (e) {
       String title = "Ошибка подтверждения";
       showDialog(
@@ -283,9 +296,7 @@ class _ConfirmRegisterPagerWidgetState
       String title = "Ошибка сервера";
       showDialog(
           context: context,
-          builder: (BuildContext context) =>
-              buildError(context, title, {}));
+          builder: (BuildContext context) => buildError(context, title, {}));
     }
-    
   }
 }

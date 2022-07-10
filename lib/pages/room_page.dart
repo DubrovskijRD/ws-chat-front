@@ -5,10 +5,18 @@ import 'package:flutter_application_1/entity/users.dart';
 import 'package:flutter_application_1/services/websocket.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_application_1/router.gr.dart';
+import 'package:auto_route/auto_route.dart';
 
 class RoomPageWidget extends StatefulWidget {
-  late Room room;
-  RoomPageWidget({Key? key, required Room this.room}) : super(key: key);
+  late int roomId;
+  RoomPageWidget({Key? key, @PathParam('id') required this.roomId})
+      : super(key: key);
+  // RoomPageWidget({Key? key, required this.roomId}) : super(key: key);
+
+  static const String baseRoute = '/room';
+  static String Function(int roomId) routeFromRoomId =
+      (int roomId) => baseRoute + '/$roomId';
 
   @override
   _RoomPageWidgetState createState() => _RoomPageWidgetState();
@@ -17,27 +25,75 @@ class RoomPageWidget extends StatefulWidget {
 class _RoomPageWidgetState extends State<RoomPageWidget> {
   late TextEditingController textController;
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isLoading = true;
+  bool stateDone = false;
 
   @override
   void initState() {
-    super.initState();
+    // super.initState();
     textController = TextEditingController();
+    super.initState();
+    AppState appState = Provider.of<AppState>(context, listen: false);
+    Future(() async {
+      // if (!appState.authService.isLogin()) {
+      //   appState.router.replace(LoginPageWidgetRoute());
+      //   return;
+      // }
+      setState(() {
+        stateDone = true;
+      });
+      appState.socket.sendQuery(Query('friend', {}, uid: "fq"));
+      appState.socket.sendQuery(Query('room', {}, uid: "rq"));
+      appState.socket.sendQuery(
+          Query('friend_request', {"incoming": true, "outgoing": true}));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     String label = "???";
+    if (!stateDone) {
+      return Container(
+        child: Center(
+          child: SizedBox(
+            child: CircularProgressIndicator(),
+            height: 36,
+            width: 36,
+          ),
+        ),
+      );
+    }
+
     AppState appState = Provider.of<AppState>(context, listen: false);
     int myId = appState.authService.getId()!;
     User? member;
-  
-    if (widget.room.name != null) {
-      label = widget.room.name ?? label;
+    Room? room =
+        Provider.of<RoomStore>(context, listen: true).getEntity(widget.roomId);
+    if (room == null) {
+      Future.delayed(const Duration(milliseconds: 2000), () {
+        setState(() {
+          isLoading = false;
+        });
+      });
+      return isLoading
+          ? Container(
+              child: Center(
+                child: SizedBox(
+                  child: CircularProgressIndicator(),
+                  height: 36,
+                  width: 36,
+                ),
+              ),
+            )
+          : Text("Not found room with id: ${widget.roomId}");
+    }
+    if (room.name != null) {
+      label = room.name ?? label;
     } else {
       EntityStore<User> userStore =
           Provider.of<EntityStore<User>>(context, listen: false);
-      for (int memberId in widget.room.members){
-        if (memberId != myId){
+      for (int memberId in room.members) {
+        if (memberId != myId) {
           member = userStore.getEntity(memberId)!;
         }
       }
@@ -107,15 +163,14 @@ class _RoomPageWidgetState extends State<RoomPageWidget> {
             children: [
               Expanded(child: Consumer<RoomStore>(
                 builder: (context, roomStore, child) {
-                  Room room =
-                      roomStore.getEntity(widget.room.id!)!;
                   return ListView.builder(
                       reverse: true,
                       shrinkWrap: true,
                       padding: const EdgeInsets.all(8),
                       itemCount: room.messages.length,
                       itemBuilder: (BuildContext context, int index) {
-                        Message message = List.from(room.messages.reversed)[index];
+                        Message message =
+                            List.from(room.messages.reversed)[index];
                         return messageWidget(message);
                       });
                 },
@@ -183,7 +238,7 @@ class _RoomPageWidgetState extends State<RoomPageWidget> {
                         ),
                         onPressed: () {
                           print('IconButton pressed ...');
-                          sendMessage();
+                          sendMessage(room.id!);
                         },
                       ),
                     ),
@@ -198,12 +253,12 @@ class _RoomPageWidgetState extends State<RoomPageWidget> {
   }
 
   Widget messageWidget(Message message) {
-
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 8, 4),
       child: Row(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: message.own ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            message.own ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 1),
@@ -236,10 +291,11 @@ class _RoomPageWidgetState extends State<RoomPageWidget> {
     );
   }
 
-    void sendMessage() {
+  void sendMessage(int roomId) {
     String body = textController.text;
     AppState appState = Provider.of<AppState>(context, listen: false);
-    appState.socket.sendCommand(Command("message", {"room_id": widget.room.id, "msg_type": 1, "msg_body": body}, "create"));
+    appState.socket.sendCommand(Command("message",
+        {"room_id": roomId, "msg_type": 1, "msg_body": body}, "create"));
     textController.clear();
   }
 }

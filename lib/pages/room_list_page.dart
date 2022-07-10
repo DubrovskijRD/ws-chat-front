@@ -3,12 +3,15 @@ import 'package:flutter_application_1/app.dart';
 import 'package:flutter_application_1/entity/chat.dart';
 import 'package:flutter_application_1/entity/users.dart';
 import 'package:flutter_application_1/pages/room_page.dart';
+import 'package:flutter_application_1/router.dart';
+import 'package:flutter_application_1/router.gr.dart';
 import 'package:flutter_application_1/services/api.dart';
 import 'package:flutter_application_1/services/websocket.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class RoomListPageWidget extends StatefulWidget {
+  static const String route = '/';
   const RoomListPageWidget({Key? key}) : super(key: key);
 
   @override
@@ -19,13 +22,13 @@ class _RoomListPageWidgetState extends State<RoomListPageWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     AppState appState = Provider.of<AppState>(context, listen: false);
-    Future(() {
-      if (!appState.authService.isLogin()) {
-        Navigator.pushNamed(context, '/login');
-      }
+    Future(() async {
+      // if (!appState.authService.isLogin()) {
+      //   appState.router.replace(LoginPageWidgetRoute());
+      // }
       appState.socket.sendQuery(Query('friend', {}, uid: "fq"));
       appState.socket.sendQuery(Query('room', {}, uid: "rq"));
       appState.socket.sendQuery(
@@ -170,7 +173,8 @@ class _RoomListPageWidgetState extends State<RoomListPageWidget> {
                   style: ElevatedButton.styleFrom(primary: Colors.transparent),
                   child: Text("Найти друзей"),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/users/search');
+                    Provider.of<AppState>(context, listen: false).router.push(SearchUsersWidgetRoute());
+                   
                   },
                 ),
               ),
@@ -211,9 +215,8 @@ class _RoomListPageWidgetState extends State<RoomListPageWidget> {
     appState.disconnect();
     await logout(appState.authService.getId()!, appState.authService.getToken()!);
     appState.authService.clear();
-    Navigator.pushNamed(context, '/login');
+    appState.router.push(LoginPageWidgetRoute());
 
-    // appState.authService.setAuth(session.email, session.token, session.id);
   }
 
   Widget roomListElement(Room room, BuildContext context) {
@@ -239,15 +242,16 @@ class _RoomListPageWidgetState extends State<RoomListPageWidget> {
       padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
       child: InkWell(
         onTap: () async {
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    // ChatPageCopyWidget(),
-                    RoomPageWidget(
-                  room: room,
-                ),
-              ));
+          Provider.of<AppState>(context, listen: false).router.push(RoomPageWidgetRoute(roomId: room.id!));
+          // await Navigator.push(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) =>
+          //           // ChatPageCopyWidget(),
+          //           RoomPageWidget(
+          //         room: room,
+          //       ),
+          //     ));
         },
         child: Container(
           width: double.infinity,
@@ -387,7 +391,7 @@ class _RoomListPageWidgetState extends State<RoomListPageWidget> {
                       // RoomStore roomStore = Provider.of<RoomStore>(context, listen: false);
                       int? roomId = getOrCreateRoom(context, user.id);
                       print("room: $roomId for user: ${user.id}");
-                      Navigator.pushNamed(context, '/');
+                      Provider.of<AppState>(context, listen: false).router.push(RoomListPageWidgetRoute());
                     },
                   )),
             ],

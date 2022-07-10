@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/app.dart';
 import 'package:flutter_application_1/entity/auth.dart';
+import 'package:flutter_application_1/pages/room_list_page.dart';
+import 'package:flutter_application_1/router.gr.dart';
 import 'package:flutter_application_1/services/api.dart';
 import 'package:flutter_application_1/widgets/errors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -9,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
 
 class LoginPageWidget extends StatefulWidget {
+  static const String route = 'login';
   const LoginPageWidget({Key? key}) : super(key: key);
 
   @override
@@ -42,13 +45,13 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
     emailAddressLoginController = TextEditingController();
     passwordLoginController = TextEditingController();
     passwordLoginVisibility = false;
-    AppState appState = Provider.of<AppState>(context, listen: false);
-    Future(() {
-      
-      if (appState.authService.isLogin()) {
-        Navigator.pushNamed(context, '/');
-      }
-    });
+    // AppState appState = Provider.of<AppState>(context, listen: false);
+    // Future(() {
+    //   if (appState.authService.isLogin()) {
+    //     appState.router.replace(RoomListPageWidgetRoute());
+    //     // appState.router.navigateTo(context, '/');
+    //   }
+    // });
   }
 
   @override
@@ -683,8 +686,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                             // FFButtonWidget(
                                             TextButton(
                                           onPressed: () {
-                                            Navigator.pushNamed(
-                                                context, '/register/confirm');
+                                            Provider.of<AppState>(context, listen: false).router.push(ConfirmRegisterPageWidgetRoute());
                                           },
                                           child: const Text(
                                               "Уже есть код подтверждения?"),
@@ -821,7 +823,8 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
       );
       AppState appState = Provider.of<AppState>(context, listen: false);
       appState.connect();
-      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      appState.router.push(RoomListPageWidgetRoute());
+      // Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } on AuthError catch (e) {
       String title = "Ошибка авторизации";
       showDialog(
@@ -848,8 +851,9 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
         emailAddressController.text,
         passwordController.text,
       );
-      Navigator.pushNamedAndRemoveUntil(
-          context, '/register/confirm', (route) => false);
+      Provider.of<AppState>(context, listen: false).router.push(ConfirmRegisterPageWidgetRoute());
+      // Navigator.pushNamedAndRemoveUntil(
+      //     context, '/register/confirm', (route) => false);
     } on AuthError catch (e) {
       String title = "Ошибка регистрации";
       showDialog(

@@ -5,6 +5,8 @@ import 'package:flutter_application_1/entity/users.dart';
 import 'package:flutter_application_1/pages/room_list_page.dart';
 import 'package:flutter_application_1/pages/register_confirm_page.dart';
 import 'package:flutter_application_1/pages/search_user_page.dart';
+import 'package:flutter_application_1/router.dart';
+import 'package:flutter_application_1/router.gr.dart';
 import 'package:flutter_application_1/services/auth.dart';
 import 'package:flutter_application_1/services/websocket.dart';
 import 'package:provider/provider.dart';
@@ -124,6 +126,8 @@ class ConnectState extends ChangeNotifier {
 
 class AppState {
   final AuthService authService;
+  // late final FluroRouter router;
+  late final AppRouter router;
 
   EntityStore<User> userStore = EntityStore();
   late RoomStore roomStore;
@@ -223,6 +227,9 @@ class ChatApp extends StatefulWidget {
   late AppState appState;
   ChatApp(AuthService authService, {Key? key}) : super(key: key) {
     appState = AppState(authService, QueryResponseMap());
+    final _appRouter = AppRouter(authRequiredGuard: AuthRequiredGuard(authService), anonimusRequiredGuard: AnonimusRequiredGuard(authService));
+    appState.router = _appRouter;
+
   }
 
   @override
@@ -281,30 +288,9 @@ class _AppState extends State<_App> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: widget.appState.authService.isLogin() ? '/' : '/login',
-      routes: {
-        '/': (context) => RoomListPageWidget(),
-        '/login': (context) => lp.LoginPageWidget(),
-        '/register/confirm': (context) => ConfirmRegisterPageWidget(),
-        '/users/search': (context) => SearchUsersWidget(),
-        // '/room_list_page':(context) => RoomListPageWidget(),
-      },
-      // onGenerateRoute: (settings) {
-      //   if (settings.name == RoomPage.routeName) {
-      //     print(settings.arguments);
-      //     if (settings.arguments != null) {
-      //       final args = settings.arguments as RoomPageArgument;
-      //       print(args.roomId);
-      //       return MaterialPageRoute(builder: (context) {
-      //         return RoomPage(roomId: args.roomId);
-      //       });
-      //     }
-      //   }
-      //   return MaterialPageRoute(builder: (context) {
-      //     return HomePage();
-      //   });
-      // },
+    return MaterialApp.router(
+      routerDelegate: widget.appState.router.delegate(),      
+      routeInformationParser: widget.appState.router.defaultRouteParser(),
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(

@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 class SearchUsersWidget extends StatefulWidget {
   const SearchUsersWidget({Key? key}) : super(key: key);
+  static const String route = '/users/search';
 
   @override
   _SearchUsersWidgetState createState() => _SearchUsersWidgetState();
@@ -1240,7 +1241,8 @@ class _SearchUsersWidgetState extends State<SearchUsersWidget> {
                     child: Text("Добавить"),
                     onPressed: () {
                       addFriend(user);
-                      Navigator.pushNamed(context, '/');
+                      // Provider.of<AppState>(context, listen: false).router.navigateTo(context, '/');
+                      // Navigator.pushNamed(context, '/');
                     },
                   ): 
                   ElevatedButton(
@@ -1363,7 +1365,8 @@ class _SearchUsersWidgetState extends State<SearchUsersWidget> {
                   style: ElevatedButton.styleFrom(primary: Color.fromARGB(96, 226, 237, 255)),
                   onPressed: () {
                     addFriend(user);
-                    Navigator.pushNamed(context, '/');
+                    // Provider.of<AppState>(context, listen: false).router.navigateTo(context, '/');
+                    // Navigator.pushNamed(context, '/');
                   },
                 ),
               ),
