@@ -278,8 +278,7 @@ class _ConfirmRegisterPagerWidgetState
               TextButton(
                 child: const Text('На страницу входа.'),
                 onPressed: () {
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, '/login', (route) => false);
+                  Provider.of<AppState>(context, listen: false).router.push(LoginPageWidgetRoute());
                 },
               ),
             ],
